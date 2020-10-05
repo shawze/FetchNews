@@ -18,7 +18,7 @@ class HotBrand():
         data = []
         data += self.parse_toutiao()
         data += self.parse_weibo()
-        self.html_format(data)
+        return self.html_format(data)
 
     def html_format(self,data):
         data_html = []
@@ -41,8 +41,9 @@ class HotBrand():
             html  = fb.read()
         html = html.replace('内容区域',data_html_text)
         html = html.replace('更新时间',f'更新时间：{fetch_time}')
-        with open('hot.html','w',encoding='utf-8') as fb:
-            fb.write(html)
+        # with open('hot.html','w',encoding='utf-8') as fb:
+        #     fb.write(html)
+        return html
 
     def parse_toutiao(self):
         resp = requests.get(self.toutiao_url)
@@ -105,14 +106,14 @@ class HotBrand():
             # pprint.pprint(data_lite)
         return data_lite
 
-    def uploadGithub(self,token):
+    def uploadGithub(self,token,html):
         file_name = 'hot.html'
         header = {"Accept": "application/vnd.github.v3+json",
                   "Authorization": 'token '+ token,
                   }
         url = 'https://api.github.com/repos/shawze/shawze.github.io/contents/hot/index.html'
-        with open(file_name, 'rb') as fb:
-            fileDate = base64.b64encode(fb.read()).decode('utf-8')
+
+        fileDate = base64.b64encode(html.encode('utf-8')).decode('utf-8')
         r = requests.get(url=url, headers=header)
         if r.status_code == 200:
             sha = r.json()['sha']
@@ -135,6 +136,6 @@ if __name__ == '__main__':
     token = sys.argv[1]
     print(sys.argv)
     hot_brand = HotBrand()
-    hot_brand.fetch()
-    hot_brand.uploadGithub(token)
+    html = hot_brand.fetch()
+    hot_brand.uploadGithub(token,html)
 
