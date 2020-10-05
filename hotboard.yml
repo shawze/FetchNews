@@ -1,0 +1,22 @@
+name: hotboard
+on:
+  schedule:
+    - cron:  '*/5 * * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: set env
+      run: |
+        sudo pip3 install requests
+        sudo pip3 install lxml
+    - name: git clone
+      run: |
+        cd /tmp
+        sudo git clone https://github.com/shawze/hotboard.git
+    - name: run hotboard
+      run: |
+        sudo su
+        cd /tmp/hotboard
+        python3  githubaction.py ${{secrets.GH_TOKEN}}
