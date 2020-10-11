@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#! /usr/bin/env python3
-
+# ! /usr/bin/env python3
+import time
 from datetime import datetime
 import requests
 from lxml import etree
@@ -20,13 +20,13 @@ class HotBrand():
         data += self.parse_weibo()
         return self.html_format(data)
 
-    def html_format(self,data):
+    def html_format(self, data):
         data_html = []
-        for i,item in enumerate(data):
+        for i, item in enumerate(data):
             text = f'''\
             <a href="{item['Url']}">
             <div class="card-v6-warpper" style="height: 52px;">
-            <div class="card-index card-index-active">{i+1}</div>
+            <div class="card-index card-index-active">{i + 1}</div>
             <div class="card-title">{item['Title'][:14]}</div>
             <div class="card-hot">{item['Site']}</div>
             </div>
@@ -36,11 +36,16 @@ class HotBrand():
         data_html_text = ''.join(data_html)
         # pprint.pprint(data_html)
         # print(data_html_text)
-        fetch_time = str(datetime.now().ctime())
+        # fetch_time = str(datetime.now().ctime())
+        time_utc = time.gmtime()
+        time_BJ = time.strptime(f"{time_utc.tm_hour + 8} {time_utc.tm_min} {time_utc.tm_sec}", "%H %M %S")
+        fetch_time = time.strftime('%D') + ' ' + time.strftime('%X', time_BJ)
+
+
         with open('template.html', 'r', encoding='utf-8') as fb:
-            html  = fb.read()
-        html = html.replace('内容区域',data_html_text)
-        html = html.replace('更新时间',f'更新时间：{fetch_time}')
+            html = fb.read()
+        html = html.replace('内容区域', data_html_text)
+        html = html.replace('更新时间', f'更新时间：{fetch_time}')
         # with open('hot.html','w',encoding='utf-8') as fb:
         #     fb.write(html)
         return html
@@ -50,15 +55,15 @@ class HotBrand():
         data_resp = resp.json()
         if data_resp['status'] == "success":
             data = data_resp['data']
-            data_lite =  [{
-                           'Id': i+1,
-                           'Title':item['Title'],
-                           'Url':item['Url'],
-                           'HotValue':item['HotValue'],
-                           # 'Type': '',
-                            'Site': '头条',
-                           }
-                          for i,item in enumerate(data)]
+            data_lite = [{
+                'Id': i + 1,
+                'Title': item['Title'],
+                'Url': item['Url'],
+                'HotValue': item['HotValue'],
+                # 'Type': '',
+                'Site': '头条',
+            }
+                for i, item in enumerate(data)]
             # pprint.pprint(data_lite)
         return data_lite
 
@@ -77,7 +82,7 @@ class HotBrand():
             'Sec-Fetch-User': '?1',
             'Upgrade-Insecure-Requests': '1',
         }
-        resp = requests.get(self.weibo_url,headers=header)
+        resp = requests.get(self.weibo_url, headers=header)
         resp = requests.get(self.weibo_url)
         resp_html = etree.HTML(resp.text)
         if resp_html != '':
@@ -106,10 +111,10 @@ class HotBrand():
             # pprint.pprint(data_lite)
         return data_lite
 
-    def uploadGithub(self,token,html):
+    def uploadGithub(self, token, html):
         file_name = 'hot.html'
         header = {"Accept": "application/vnd.github.v3+json",
-                  "Authorization": 'token '+ token,
+                  "Authorization": 'token ' + token,
                   }
         url = 'https://api.github.com/repos/shawze/shawze.github.io/contents/hot/index.html'
 
@@ -120,16 +125,16 @@ class HotBrand():
         else:
             sha = ''
         # print(r.json())
-        param ={"message":str(datetime.today()),
-                "content":fileDate,
-                "committer":
-                    {"name": "shawze",
-                     "email": "xiaoze@live.com"
-                     },
-                "sha": sha
-                }
-        rtn = requests.put(url,data=json.dumps(param),headers=header)
-        print('Github:',rtn.text)
+        param = {"message": str(datetime.today()),
+                 "content": fileDate,
+                 "committer":
+                     {"name": "shawze",
+                      "email": "xiaoze@live.com"
+                      },
+                 "sha": sha
+                 }
+        rtn = requests.put(url, data=json.dumps(param), headers=header)
+        print('Github:', rtn.text)
 
 
 if __name__ == '__main__':
@@ -137,5 +142,4 @@ if __name__ == '__main__':
     print(sys.argv)
     hot_brand = HotBrand()
     html = hot_brand.fetch()
-    hot_brand.uploadGithub(token,html)
-
+    hot_brand.uploadGithub(token, html)
