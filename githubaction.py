@@ -38,8 +38,8 @@ class HotBrand():
         # print(data_html_text)
         # fetch_time = str(datetime.now().ctime())
         time_utc = time.gmtime()
-        time_BJ = time.strptime(f"{time_utc.tm_hour + 8} {time_utc.tm_min} {time_utc.tm_sec}", "%H %M %S")
-        fetch_time = time.strftime('%D') + ' ' + time.strftime('%X', time_BJ)
+        time_BJ = time.strptime(f"{time_utc.tm_hour + 8}:{time_utc.tm_min}", "%H:%M")
+        fetch_time = time.strftime('%D') + '  ' + time.strftime('%X', time_BJ)
 
 
         with open('template.html', 'r', encoding='utf-8') as fb:
