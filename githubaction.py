@@ -46,7 +46,7 @@ class HotBrand():
             time_utc_day_now = time.strftime('%d')
         time_BJ = time.strptime(f"{time_utc_hour_now}:{time_utc.tm_min}", "%H:%M")
         fetch_time = f'{time_utc_month_now}-{time_utc_day_now}  {time.strftime('%X', time_BJ)}'
-        # fetch_time = str(time_utc_month_now) + '-' + str(time_utc_day_now) + '  ' + time.strftime('%X', time_BJ)
+        # fetch_time = str(time_utc_month_now) + '-' + str(time_utc_day_now) + '  ' + time.strftime("%X", time_BJ)
 
         with open('template.html', 'r', encoding='utf-8') as fb:
             html = fb.read()
