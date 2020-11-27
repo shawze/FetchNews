@@ -41,7 +41,7 @@ class HotBrand():
         time_utc_hour_now = (time_utc.tm_hour + 8)%24
         time_utc_month_now = time.strftime('%m')
         if (time_utc.tm_hour + 8)//24 == 1:
-            time_utc_day_now = time.strftime('%d') +1
+            time_utc_day_now = str(int(time.strftime('%d')) +1)
         else:
             time_utc_day_now = time.strftime('%d')
         time_BJ = time.strptime(f"{time_utc_hour_now}:{time_utc.tm_min}", "%H:%M")
