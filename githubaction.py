@@ -33,7 +33,7 @@ class HotBrand():
                             <a class="text-secondary" href="{item['Url']}">
                             <div class="row">
                                 <div class="col-1">{i + 1}</div>
-                                <div class="col-10">{item['Title'][:14]}</div>
+                                <div class="col-10">{item['Title'][:20]}</div>
                             </div>
                             </a>
                         </div>
@@ -58,8 +58,8 @@ class HotBrand():
         html = html.replace('头条区域',data_html_text[0])
         html = html.replace('微博区域',data_html_text[1])
         html = html.replace('更新时间', f'更新时间：{fetch_time}')
-        # with open('hot.html','w',encoding='utf-8') as fb:
-        #     fb.write(html)
+        with open('hot.html','w',encoding='utf-8') as fb:
+            fb.write(html)
         return html
 
     def parse_toutiao(self):
