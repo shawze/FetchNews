@@ -15,40 +15,41 @@ class HotBrand():
         self.toutiao_url = 'https://i.snssdk.com/hot-event/hot-board/?origin=hot_board'
 
     def fetch(self):
-        data = []
-        data += self.parse_toutiao()
-        data += self.parse_weibo()
-        return self.html_format(data)
+        data = [
+            self.parse_toutiao(),
+            self.parse_weibo()
+        ]
+        # pprint.pprint(data)
+        self.html_format(data)
 
     def html_format(self, data):
-        data_html = []
-        for i, item in enumerate(data):
-            text = f'''\
-            <a href="{item['Url']}">
-            <div class="card-v6-warpper" style="height: 52px;">
-            <div class="card-index card-index-active">{i + 1}</div>
-            <div class="card-title">{item['Title'][:14]}</div>
-            <div class="card-hot">{item['Site']}</div>
-            </div>
-            </a>
-            '''
-            data_html.append(text)
-        data_html_text = ''.join(data_html)
+        data_html_text = []
+        for data_item in data:
+            data_html = []
+            for i, item in enumerate(data_item):
+                text = f'''\
+                <div class="container" style="height: 35px;">
+                    <a class="text-secondary" href="{item['Url']}">
+                    <div class="row">
+                        <div class="col-1">{i + 1}</div>
+                        <div class="col-10">{item['Title'][:14]}</div>
+                    </div>
+                    </a>
+                </div>
+
+                '''
+                data_html.append(text)
+            data_html_text.append(''.join(data_html))
         # pprint.pprint(data_html)
         # print(data_html_text)
-        # fetch_time = str(datetime.now().ctime())
-        time_utc = time.gmtime()
-        time_BJ = time.strptime(f"{time_utc.tm_hour + 8} {time_utc.tm_min} {time_utc.tm_sec}", "%H %M %S")
-        fetch_time = time.strftime('%D') + ' ' + time.strftime('%X', time_BJ)
-
-
-        with open('template.html', 'r', encoding='utf-8') as fb:
+        fetch_time = str(datetime.now().ctime())
+        with open('hotboardtemplate.html', 'r', encoding='utf-8') as fb:
             html = fb.read()
-        html = html.replace('内容区域', data_html_text)
+        html = html.replace('头条区域', data_html_text[0])
+        html = html.replace('微博区域', data_html_text[1])
         html = html.replace('更新时间', f'更新时间：{fetch_time}')
-        # with open('hot.html','w',encoding='utf-8') as fb:
-        #     fb.write(html)
-        return html
+        with open('hot.html', 'w', encoding='utf-8') as fb:
+            fb.write(html)
 
     def parse_toutiao(self):
         resp = requests.get(self.toutiao_url)
