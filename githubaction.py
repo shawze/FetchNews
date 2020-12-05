@@ -58,8 +58,8 @@ class HotBrand():
         html = html.replace('头条区域',data_html_text[0])
         html = html.replace('微博区域',data_html_text[1])
         html = html.replace('更新时间', f'更新时间：{fetch_time}')
-        with open('hot.html','w',encoding='utf-8') as fb:
-            fb.write(html)
+        # with open('hot.html','w',encoding='utf-8') as fb:
+            # fb.write(html)
         return html
 
     def parse_toutiao(self):
@@ -150,8 +150,15 @@ class HotBrand():
 
 
 if __name__ == '__main__':
-    token = sys.argv[1]
-    print(sys.argv)
+    try:
+        token = sys.argv[1]
+    except:
+        token = None
+    # print(sys.argv)
     hot_brand = HotBrand()
     html = hot_brand.fetch()
-    hot_brand.uploadGithub(token, html)
+    if token != None:
+        hot_brand.uploadGithub(token, html)
+    else:
+        with open('hot.html','w',encoding='utf-8') as fb:
+            fb.write(html)
