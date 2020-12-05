@@ -54,7 +54,7 @@ class HotBrand():
                         <div class="container-fluid justify-content-start" style="height: 45px;font-size:20px;">
                             <a class="text-secondary text-decoration-none" href="{item['Url']}">
                             <div class="row">
-                                <div class="col-1">{i + 1}</div>
+                                <div class="col-1 text-danger">{i + 1}</div>
                                 <div class="col-11 text-truncate">{item['Title']}</div>
                             </div>
                             </a>
