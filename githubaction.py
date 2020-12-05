@@ -11,9 +11,31 @@ import sys
 
 class HotBrand():
     def __init__(self):
+        self.fetch_time = ''
+        self.fetch_date_xwlb = ''
+        self.fetch_time_format()
         self.weibo_url = 'https://s.weibo.com/top/summary?cate=realtimehot'
         self.toutiao_url = 'https://i.snssdk.com/hot-event/hot-board/?origin=hot_board'
-        self.xwlb_url = 'https://tv.cctv.com/lm/xwlb/day/20201204.shtml'
+        self.xwlb_url = 'https://tv.cctv.com/lm/xwlb/day/{}.shtml'.format(self.fetch_date_xwlb)
+
+    def fetch_time_format(self):
+        time_utc = time.gmtime()
+        time_utc_hour_now = (time_utc.tm_hour + 8) % 24
+        time_utc_month_now = time.strftime('%m')
+        time_utc_year_now = time.strftime('%Y')
+        # 当前北京日期
+        if (time_utc.tm_hour + 8) // 24 == 1:
+            time_utc_day_now = str(int(time.strftime('%d')) + 1)
+        else:
+            time_utc_day_now = time.strftime('%d')
+        time_BJ = time.strptime(f"{time_utc_hour_now}:{time_utc.tm_min}", "%H:%M")
+        self.fetch_time = f'{time_utc_month_now}-{time_utc_day_now}  {time.strftime("%X", time_BJ)}'
+        # 新闻联播抓取时间
+        if time_utc_hour_now < 21:
+            time_utc_day_now = int(time_utc_day_now) - 1
+        time_utc_day_now = '{:0>2d}'.format(int(time_utc_day_now))
+        self.fetch_date_xwlb = f'{time_utc_year_now}{time_utc_month_now}{time_utc_day_now}'
+        # print(self.fetch_date_xwlb)
 
     def fetch(self):
         data = [
@@ -41,23 +63,12 @@ class HotBrand():
                 data_html.append(text)
             data_html_text.append(''.join(data_html))
 
-        time_utc = time.gmtime()
-        time_utc_hour_now = (time_utc.tm_hour + 8)%24
-        time_utc_month_now = time.strftime('%m')
-        if (time_utc.tm_hour + 8)//24 == 1:
-            time_utc_day_now = str(int(time.strftime('%d')) +1)
-        else:
-            time_utc_day_now = time.strftime('%d')
-        time_BJ = time.strptime(f"{time_utc_hour_now}:{time_utc.tm_min}", "%H:%M")
-        fetch_time = f'{time_utc_month_now}-{time_utc_day_now}  {time.strftime("%X", time_BJ)}'
-        # fetch_time = str(time_utc_month_now) + '-' + str(time_utc_day_now) + '  ' + time.strftime("%X", time_BJ)
-
         with open('template.html', 'r', encoding='utf-8') as fb:
             html = fb.read()
         html = html.replace('头条区域',data_html_text[0])
         html = html.replace('微博区域',data_html_text[1])
         html = html.replace('新闻联播区域',data_html_text[2])
-        html = html.replace('更新时间', f'更新时间：{fetch_time}')
+        html = html.replace('更新时间', f'更新时间：{self.fetch_time}')
         # with open('hot.html','w',encoding='utf-8') as fb:
             # fb.write(html)
         return html
