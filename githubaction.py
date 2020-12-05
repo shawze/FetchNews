@@ -7,6 +7,7 @@ from lxml import etree
 import json
 import base64
 import sys
+import re
 
 
 class HotBrand():
@@ -17,6 +18,7 @@ class HotBrand():
         self.weibo_url = 'https://s.weibo.com/top/summary?cate=realtimehot'
         self.toutiao_url = 'https://i.snssdk.com/hot-event/hot-board/?origin=hot_board'
         self.xwlb_url = 'https://tv.cctv.com/lm/xwlb/day/{}.shtml'.format(self.fetch_date_xwlb)
+        self.cctv_news_url = 'https://news.cctv.com/2019/07/gaiban/cmsdatainterface/page/news_{}.jsonp?cb=news'
         self.financial_news_url = 'http://news.10jqka.com.cn/today_list/index_{}.shtml'
 
     def fetch_time_format(self):
@@ -32,7 +34,7 @@ class HotBrand():
         time_BJ = time.strptime(f"{time_utc_hour_now}:{time_utc.tm_min}", "%H:%M")
         self.fetch_time = f'{time_utc_month_now}-{time_utc_day_now}  {time.strftime("%X", time_BJ)}'
         # 新闻联播抓取时间
-        if time_utc_hour_now < 21:
+        if time_utc_hour_now < 20:
             time_utc_day_now = int(time_utc_day_now) - 1
         time_utc_day_now = '{:0>2d}'.format(int(time_utc_day_now))
         self.fetch_date_xwlb = f'{time_utc_year_now}{time_utc_month_now}{time_utc_day_now}'
@@ -42,8 +44,9 @@ class HotBrand():
         data = [
             self.parse_toutiao(),
             self.parse_weibo(),
-            self.parse_xwlb(),
+            self.parse_cctv_news(),
             self.parse_financial_news(),
+            self.parse_xwlb(),
         ]
         return self.html_format(data)
 
@@ -67,13 +70,14 @@ class HotBrand():
 
         with open('template.html', 'r', encoding='utf-8') as fb:
             html = fb.read()
-        html = html.replace('头条区域',data_html_text[0])
-        html = html.replace('微博区域',data_html_text[1])
-        html = html.replace('新闻联播区域',data_html_text[2])
-        html = html.replace('财经新闻内容区域',data_html_text[3])
+        html = html.replace('头条区域', data_html_text[0])
+        html = html.replace('微博区域', data_html_text[1])
+        html = html.replace('央视新闻区域', data_html_text[2])
+        html = html.replace('财经新闻区域', data_html_text[3])
+        html = html.replace('新闻联播区域', data_html_text[4])
         html = html.replace('更新时间', f'更新时间：{self.fetch_time}')
         # with open('hot.html','w',encoding='utf-8') as fb:
-            # fb.write(html)
+        # fb.write(html)
         return html
 
     def parse_toutiao(self):
@@ -91,7 +95,7 @@ class HotBrand():
             }
                 for i, item in enumerate(data)]
             # pprint.pprint(data_lite)
-        return data_lite
+            return data_lite
 
     def parse_weibo(self):
         header = {
@@ -135,7 +139,31 @@ class HotBrand():
                 }
                 data_lite.append(temp)
             # pprint.pprint(data_lite)
-        return data_lite
+            return data_lite
+
+    def parse_cctv_news(self):
+        data_lite_total = []
+        urls = [self.cctv_news_url.format(i) for i in range(1, 3)]
+        for url in urls:
+            resp = requests.get(url)
+            resp.encoding = resp.apparent_encoding
+            resp_text = re.sub('^news\(', '', resp.text)
+            resp_text = re.sub('\)$', '', resp_text)
+            data_resp = json.loads(resp_text)
+            if data_resp['data']['total'] > 0:
+                data = data_resp['data']['list']
+                # print(len(data))
+                data_lite = [{
+                    'Id': i + 1,
+                    'Title': item['title'],
+                    'Url': item['url'],
+                    'HotValue': item['count'],
+                    # 'Type': '',
+                    'Site': '央视新闻',
+                }
+                    for i, item in enumerate(data)]
+                data_lite_total += data_lite
+        return data_lite_total
 
     def parse_xwlb(self):
         header = {
@@ -150,7 +178,7 @@ class HotBrand():
         if resp_html != '':
             selector_title = resp_html.xpath('//div[@class="title"]/text()')
             selector_url = resp_html.xpath('//li/a/@href')
-            selector_id = range(1,max(len(selector_title),len(selector_url))+1)
+            selector_id = range(1, max(len(selector_title), len(selector_url)) + 1)
 
             # print(len(selector_title))
             # print(len(selector_url))
@@ -162,15 +190,15 @@ class HotBrand():
             for item in data:
                 temp = {
                     'Id': int(item[0]),
-                    'Title': item[1].replace('[视频]',''),
+                    'Title': item[1].replace('[视频]', ''),
                     'Url': item[2],
                     'HotValue': 0,
                     'Site': '新闻联播',
                 }
                 data_lite.append(temp)
             # pprint.pprint(data_lite)
-        # print(data_lite)
-        return data_lite
+            # print(data_lite)
+            return data_lite
 
     def parse_financial_news(self):
         data_lite_total = []
@@ -178,7 +206,7 @@ class HotBrand():
             'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/85.0.4183.121 Mobile Safari/537.36',
         }
-        urls = [self.financial_news_url.format(i) for i in range(1,6)]
+        urls = [self.financial_news_url.format(i) for i in range(1, 6)]
         for url in urls:
             resp = requests.get(url, headers=header)
             resp.encoding = resp.apparent_encoding
@@ -203,7 +231,7 @@ class HotBrand():
                         'Site': '财经新闻',
                     }
                     data_lite.append(temp)
-            data_lite_total += data_lite
+                data_lite_total += data_lite
         return data_lite_total
 
     def uploadGithub(self, token, html):
@@ -243,5 +271,5 @@ if __name__ == '__main__':
     if token != None:
         hot_brand.uploadGithub(token, html)
     else:
-        with open('hot.html','w',encoding='utf-8') as fb:
+        with open('hot.html', 'w', encoding='utf-8') as fb:
             fb.write(html)
