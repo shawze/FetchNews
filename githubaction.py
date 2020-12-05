@@ -13,14 +13,14 @@ class HotBrand():
     def __init__(self):
         self.weibo_url = 'https://s.weibo.com/top/summary?cate=realtimehot'
         self.toutiao_url = 'https://i.snssdk.com/hot-event/hot-board/?origin=hot_board'
+        self.xwlb_url = 'https://tv.cctv.com/lm/xwlb/day/20201204.shtml'
 
     def fetch(self):
         data = [
             self.parse_toutiao(),
-            self.parse_weibo()
+            self.parse_weibo(),
+            self.parse_xwlb(),
         ]
-        # pprint.pprint(data)
-        # self.html_format(data)
         return self.html_format(data)
 
     def html_format(self, data):
@@ -29,15 +29,14 @@ class HotBrand():
             data_html = []
             for i, item in enumerate(data_item):
                 text = f'''\
-                        <div class="container" style="height: 35px;">
-                            <a class="text-secondary" href="{item['Url']}">
+                        <div class="container-fluid justify-content-start" style="height: 45px;font-size:20px;">
+                            <a class="text-secondary text-decoration-none" href="{item['Url']}">
                             <div class="row">
                                 <div class="col-1">{i + 1}</div>
-                                <div class="col-10">{item['Title'][:20]}</div>
+                                <div class="col-11 text-truncate">{item['Title']}</div>
                             </div>
                             </a>
                         </div>
-
                         '''
                 data_html.append(text)
             data_html_text.append(''.join(data_html))
@@ -57,6 +56,7 @@ class HotBrand():
             html = fb.read()
         html = html.replace('头条区域',data_html_text[0])
         html = html.replace('微博区域',data_html_text[1])
+        html = html.replace('新闻联播区域',data_html_text[2])
         html = html.replace('更新时间', f'更新时间：{fetch_time}')
         # with open('hot.html','w',encoding='utf-8') as fb:
             # fb.write(html)
@@ -121,6 +121,41 @@ class HotBrand():
                 }
                 data_lite.append(temp)
             # pprint.pprint(data_lite)
+        return data_lite
+
+    def parse_xwlb(self):
+        header = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/85.0.4183.121 Mobile Safari/537.36',
+            'Referer': 'https://tv.cctv.com/lm/xwlb/'
+        }
+        resp = requests.get(self.xwlb_url, headers=header)
+        resp.encoding = resp.apparent_encoding
+        resp_html = etree.HTML(resp.text)
+        # print(resp.text)
+        if resp_html != '':
+            selector_title = resp_html.xpath('//div[@class="title"]/text()')
+            selector_url = resp_html.xpath('//li/a/@href')
+            selector_id = range(1,max(len(selector_title),len(selector_url))+1)
+
+            # print(len(selector_title))
+            # print(len(selector_url))
+            # print(len(selector_id))
+
+            data = zip(selector_id, selector_title, selector_url)
+            data = list(data)
+            data_lite = []
+            for item in data:
+                temp = {
+                    'Id': int(item[0]),
+                    'Title': item[1].replace('[视频]',''),
+                    'Url': item[2],
+                    'HotValue': 0,
+                    'Site': '新闻联播',
+                }
+                data_lite.append(temp)
+            # pprint.pprint(data_lite)
+        # print(data_lite)
         return data_lite
 
     def uploadGithub(self, token, html):
