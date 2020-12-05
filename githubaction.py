@@ -17,6 +17,7 @@ class HotBrand():
         self.weibo_url = 'https://s.weibo.com/top/summary?cate=realtimehot'
         self.toutiao_url = 'https://i.snssdk.com/hot-event/hot-board/?origin=hot_board'
         self.xwlb_url = 'https://tv.cctv.com/lm/xwlb/day/{}.shtml'.format(self.fetch_date_xwlb)
+        self.financial_news_url = 'http://news.10jqka.com.cn/today_list/index_{}.shtml'
 
     def fetch_time_format(self):
         time_utc = time.gmtime()
@@ -42,6 +43,7 @@ class HotBrand():
             self.parse_toutiao(),
             self.parse_weibo(),
             self.parse_xwlb(),
+            self.parse_financial_news(),
         ]
         return self.html_format(data)
 
@@ -68,6 +70,7 @@ class HotBrand():
         html = html.replace('头条区域',data_html_text[0])
         html = html.replace('微博区域',data_html_text[1])
         html = html.replace('新闻联播区域',data_html_text[2])
+        html = html.replace('财经新闻内容区域',data_html_text[3])
         html = html.replace('更新时间', f'更新时间：{self.fetch_time}')
         # with open('hot.html','w',encoding='utf-8') as fb:
             # fb.write(html)
@@ -168,6 +171,40 @@ class HotBrand():
             # pprint.pprint(data_lite)
         # print(data_lite)
         return data_lite
+
+    def parse_financial_news(self):
+        data_lite_total = []
+        header = {
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/85.0.4183.121 Mobile Safari/537.36',
+        }
+        urls = [self.financial_news_url.format(i) for i in range(1,6)]
+        for url in urls:
+            resp = requests.get(url, headers=header)
+            resp.encoding = resp.apparent_encoding
+            resp_html = etree.HTML(resp.text)
+            # print(resp.text)
+            if resp_html != '':
+                selector_title = resp_html.xpath('//li/span/a/@title')
+                selector_url = resp_html.xpath('//li/span/a/@href')
+                selector_id = range(1, max(len(selector_title), len(selector_url)) + 1)
+                # print(len(selector_title))
+                # print(len(selector_url))
+                # print(len(selector_id))
+                data = zip(selector_id, selector_title, selector_url)
+                data = list(data)
+                data_lite = []
+                for item in data:
+                    temp = {
+                        'Id': int(item[0]),
+                        'Title': item[1],
+                        'Url': item[2],
+                        'HotValue': 0,
+                        'Site': '财经新闻',
+                    }
+                    data_lite.append(temp)
+            data_lite_total += data_lite
+        return data_lite_total
 
     def uploadGithub(self, token, html):
         file_name = 'hot.html'
