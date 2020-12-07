@@ -209,7 +209,7 @@ class HotBrand():
         urls = [self.financial_news_url.format(i) for i in range(1, 6)]
         for url in urls:
             resp = requests.get(url, headers=header)
-            resp.encoding = resp.apparent_encoding
+            resp.encoding = 'utf8'
             resp_html = etree.HTML(resp.text)
             # print(resp.text)
             if resp_html != '':
