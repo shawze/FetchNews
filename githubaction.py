@@ -138,9 +138,8 @@ class HotBrand():
                     'Site': '微博',
                     'type': item[4]
                     }
-                    if temp.get('type') != '荐':
-                        data_lite.append(temp)
-            # pprint.pprint(data_lite)
+                if temp.get('type') != '荐':
+                    data_lite.append(temp)
             return data_lite
 
     def parse_cctv_news(self):
