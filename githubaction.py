@@ -126,7 +126,7 @@ class HotBrand():
             # print(len(selector_hot_value))
             # print(len(selector_type))
 
-            data = zip(selector_id, selector_title, selector_url, selector_hot_value, selector_type)
+            data = zip(selector_id, selector_title, selector_url, selector_hot_value)
             data = list(data)
             data_lite = []
             for item in data:
@@ -136,10 +136,8 @@ class HotBrand():
                     'Url': 'https://s.weibo.com' + item[2],
                     'HotValue': item[3],
                     'Site': '微博',
-                    'type': item[4]
                     }
-                if temp.get('type') != '荐':
-                    data_lite.append(temp)
+                data_lite.append(temp)
             return data_lite
 
     def parse_cctv_news(self):
