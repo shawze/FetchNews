@@ -44,8 +44,8 @@ class HotBrand():
         data = [
             self.parse_toutiao(),
             self.parse_weibo(),
-            self.parse_cctv_news(),
-            self.parse_financial_news(),
+            self.parse_cctv_news()[:50],
+            self.parse_financial_news()[:50],
             self.parse_xwlb(),
         ]
         return self.html_format(data)
