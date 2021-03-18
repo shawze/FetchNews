@@ -120,13 +120,13 @@ class HotBrand():
             selector_title = resp_html.xpath('//td[@class="td-02"]/a/text()')
             selector_url = resp_html.xpath('//td[@class="td-02"]/a/@href')
             selector_hot_value = resp_html.xpath('//td[@class="td-02"]/span/text()')
-            # selector_type = resp_html.xpath('//td[@class="td-03"]/i/text()')
+            selector_type = resp_html.xpath('//td[@class="td-03"]/i/text()')
             # print(len(selector_id))
             # print(len(selector_title))
             # print(len(selector_hot_value))
             # print(len(selector_type))
 
-            data = zip(selector_id, selector_title, selector_url, selector_hot_value)
+            data = zip(selector_id, selector_title, selector_url, selector_hot_value, selector_type)
             data = list(data)
             data_lite = []
             for item in data:
@@ -136,8 +136,10 @@ class HotBrand():
                     'Url': 'https://s.weibo.com' + item[2],
                     'HotValue': item[3],
                     'Site': '微博',
-                }
-                data_lite.append(temp)
+                    'type': item[4]
+                    }
+                    if temp.get('type') != '荐':
+                    data_lite.append(temp)
             # pprint.pprint(data_lite)
             return data_lite
 
