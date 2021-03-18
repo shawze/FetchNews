@@ -139,7 +139,7 @@ class HotBrand():
                     'type': item[4]
                     }
                     if temp.get('type') != '荐':
-                    data_lite.append(temp)
+                        data_lite.append(temp)
             # pprint.pprint(data_lite)
             return data_lite
 
