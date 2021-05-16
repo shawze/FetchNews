@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # ! /usr/bin/env python3
+import base64
+import json
+import re
+import sys
 import time
 from datetime import datetime
+
 import requests
 from lxml import etree
-import json
-import base64
-import sys
-import re
 
 
 class HotBrand():
@@ -116,28 +117,27 @@ class HotBrand():
         resp = requests.get(self.weibo_url)
         resp_html = etree.HTML(resp.text)
         if resp_html != '':
-            selector_id = resp_html.xpath('//td[@class="td-01 ranktop"]/text()')
+            # selector_id = resp_html.xpath('//td[@class="td-01 ranktop"]/text()')
             selector_title = resp_html.xpath('//td[@class="td-02"]/a/text()')
             selector_url = resp_html.xpath('//td[@class="td-02"]/a/@href')
             selector_hot_value = resp_html.xpath('//td[@class="td-02"]/span/text()')
             selector_type = resp_html.xpath('//td[@class="td-03"]/i/text()')
-            # print(len(selector_id))
-            # print(len(selector_title))
-            # print(len(selector_hot_value))
-            # print(len(selector_type))
+            selector_id = max(len(selector_title), len(selector_url), len(selector_hot_value))
 
-            data = zip(selector_id, selector_title, selector_url, selector_hot_value)
+            data = zip(range(1, selector_id + 1), selector_title, selector_url, selector_hot_value)
             data = list(data)
+
             data_lite = []
             for item in data:
-                temp = {
-                    'Id': int(item[0]),
-                    'Title': item[1],
-                    'Url': 'https://s.weibo.com' + item[2],
-                    'HotValue': item[3],
-                    'Site': '微博',
+                if 'void(0)' not in item[2]:
+                    temp = {
+                        'Id': int(item[0]),
+                        'Title': item[1],
+                        'Url': 'https://s.weibo.com' + item[2],
+                        'HotValue': item[3],
+                        'Site': '微博',
                     }
-                data_lite.append(temp)
+                    data_lite.append(temp)
             return data_lite
 
     def parse_cctv_news(self):
@@ -272,3 +272,7 @@ if __name__ == '__main__':
     else:
         with open('hot.html', 'w', encoding='utf-8') as fb:
             fb.write(html)
+
+    # hot_brand = HotBrand()
+    # data = hot_brand.parse_weibo()
+    # print(data)
