@@ -6,6 +6,7 @@ import re
 import sys
 import time
 from datetime import datetime
+from pprint import pprint
 
 import requests
 from lxml import etree
@@ -100,11 +101,8 @@ class HotBrand():
 
     def parse_weibo(self):
         header = {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/85.0.4183.121 Mobile Safari/537.36',
-            'Cookie': 's_tentry=-; Apache=8262693431174.124.1601098423930; SINAGLOBAL=8262693431174.124.1601098423930; '
-                      'ULV=1601098423946:1:1:1:8262693431174.124.1601098423930:; UOR=,,localhost:63342; '
-                      'WBStorage=70753a84f86f85ff|undefined',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+            'Cookie': 'SUB=_2AkMWCTBqf8NxqwJRmP0dzGLmaolzzw3EieKgVcGxJRMxHRl-yT8XqmIitRB6PYkehQJbgKCcusIBKCMrPlXZW_0Qq9oF; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9WWqv.W8UUACrx_BC4a1bScG; _s_tentry=passport.weibo.com; Apache=2762088243906.36.1633009501527; SINAGLOBAL=2762088243906.36.1633009501527; ULV=1633009501533:1:1:1:2762088243906.36.1633009501527:; WBStorage=6ff1c79b|undefined',
             'DNT': '1',
             'Host': 's.weibo.com',
             'Sec-Fetch-Dest': 'document',
@@ -114,7 +112,8 @@ class HotBrand():
             'Upgrade-Insecure-Requests': '1',
         }
         resp = requests.get(self.weibo_url, headers=header)
-        resp = requests.get(self.weibo_url)
+        # resp = requests.get(self.weibo_url)
+        # print(resp.text)
         resp_html = etree.HTML(resp.text)
         if resp_html != '':
             # selector_id = resp_html.xpath('//td[@class="td-01 ranktop"]/text()')
@@ -275,4 +274,4 @@ if __name__ == '__main__':
 
     # hot_brand = HotBrand()
     # data = hot_brand.parse_weibo()
-    # print(data)
+    # pprint(data)
