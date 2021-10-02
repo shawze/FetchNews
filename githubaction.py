@@ -4,8 +4,8 @@ import base64
 import json
 import re
 import sys
-import time
-from datetime import datetime
+# import time
+from datetime import datetime,timedelta
 from pprint import pprint
 
 import requests
@@ -19,28 +19,26 @@ class HotBrand():
         self.fetch_time_format()
         self.weibo_url = 'https://s.weibo.com/top/summary?cate=realtimehot'
         self.toutiao_url = 'https://i.snssdk.com/hot-event/hot-board/?origin=hot_board'
+        # https://tv.cctv.com/lm/xwlb/day/20210930.shtml
         self.xwlb_url = 'https://tv.cctv.com/lm/xwlb/day/{}.shtml'.format(self.fetch_date_xwlb)
         self.cctv_news_url = 'https://news.cctv.com/2019/07/gaiban/cmsdatainterface/page/news_{}.jsonp?cb=news'
         self.financial_news_url = 'http://news.10jqka.com.cn/today_list/index_{}.shtml'
 
     def fetch_time_format(self):
-        time_utc = time.gmtime()
-        time_utc_hour_now = (time_utc.tm_hour + 8) % 24
-        time_utc_month_now = time.strftime('%m')
-        time_utc_year_now = time.strftime('%Y')
-        # 当前北京日期
-        if (time_utc.tm_hour + 8) // 24 == 1:
-            time_utc_day_now = str(int(time.strftime('%d')) + 1)
-        else:
-            time_utc_day_now = time.strftime('%d')
-        time_BJ = time.strptime(f"{time_utc_hour_now}:{time_utc.tm_min}", "%H:%M")
-        self.fetch_time = f'{time_utc_month_now}-{time_utc_day_now}  {time.strftime("%X", time_BJ)}'
+        """
+        时间设置
+        :return: None
+        """
+        BJ_time = datetime.utcnow() + timedelta(hours=8)
+        self.fetch_time = BJ_time.strftime('%m-%d %H:%M')
+
         # 新闻联播抓取时间
-        if time_utc_hour_now < 20:
-            time_utc_day_now = int(time_utc_day_now) - 1
-        time_utc_day_now = '{:0>2d}'.format(int(time_utc_day_now))
-        self.fetch_date_xwlb = f'{time_utc_year_now}{time_utc_month_now}{time_utc_day_now}'
-        # print(self.fetch_date_xwlb)
+        # 20210930
+        if BJ_time.hour >= 21:
+            self.fetch_date_xwlb = BJ_time.strftime('%Y%m%d')
+        else:
+            self.fetch_date_xwlb = (BJ_time-timedelta(days=1)).strftime('%Y%m%d')
+
 
     def fetch(self):
         data = [
